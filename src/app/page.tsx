@@ -1,113 +1,179 @@
-import Image from "next/image";
+'use client'
+
+import { useRef, useEffect, useState } from 'react'
+import RectSizeInput from './RectSizeInput'
+import { Rectangle } from './Rectangle'
+/**
+    - 테이블 사이즈 선택 -> 배치 모드 실행
+    - 배치 모드에서는 호버시 해당 사이즈만큼의 영역이 마우스를 따라다님
+    - 클릭 시 해당 위치에 배치된다. 
+  **/
+const CANVAS_WIDTH = 800
+const CANVAS_HEIGHT = 800
+
+const CELL_SPACING = 40
+const imagePath = 'image/ham.png'
+const GRID_COLOR = 'gray'
+const BOUNDARY_BACKGROUND = `rgba(256, 0, 0, 0.5)`
+const dummies = [
+	{ positionX: 0, positionY: 0, width: 80, height: 80, imagePath: imagePath },
+	{
+		positionX: 240,
+		positionY: 240,
+		width: 40,
+		height: 40,
+		imagePath: imagePath,
+	},
+]
 
 export default function Home() {
-  return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      <div className="z-10 max-w-5xl w-full items-center justify-between font-mono text-sm lg:flex">
-        <p className="fixed left-0 top-0 flex w-full justify-center border-b border-gray-300 bg-gradient-to-b from-zinc-200 pb-6 pt-8 backdrop-blur-2xl dark:border-neutral-800 dark:bg-zinc-800/30 dark:from-inherit lg:static lg:w-auto  lg:rounded-xl lg:border lg:bg-gray-200 lg:p-4 lg:dark:bg-zinc-800/30">
-          Get started by editing&nbsp;
-          <code className="font-mono font-bold">src/app/page.tsx</code>
-        </p>
-        <div className="fixed bottom-0 left-0 flex h-48 w-full items-end justify-center bg-gradient-to-t from-white via-white dark:from-black dark:via-black lg:static lg:h-auto lg:w-auto lg:bg-none">
-          <a
-            className="pointer-events-none flex place-items-center gap-2 p-8 lg:pointer-events-auto lg:p-0"
-            href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            By{" "}
-            <Image
-              src="/vercel.svg"
-              alt="Vercel Logo"
-              className="dark:invert"
-              width={100}
-              height={24}
-              priority
-            />
-          </a>
-        </div>
-      </div>
+	const [isEditMode, setIsEditMode] = useState(false)
+	const canvasRef = useRef<HTMLCanvasElement>(null)
+	const [rectSize, setRectSize] = useState({
+		width: 0,
+		height: 0,
+	})
+	const [rects, setRects] = useState<Rectangle[]>(
+		dummies.map((d) => new Rectangle(d))
+	)
+	const [rectangleX, setRectangleX] = useState<number>(175) // 사각형 x 좌표
+	const [rectangleY, setRectangleY] = useState<number>(175) // 사각형 y 좌표
 
-      <div className="relative flex place-items-center before:absolute before:h-[300px] before:w-full sm:before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-full sm:after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700 before:dark:opacity-10 after:dark:from-sky-900 after:dark:via-[#0141ff] after:dark:opacity-40 before:lg:h-[360px] z-[-1]">
-        <Image
-          className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-          src="/next.svg"
-          alt="Next.js Logo"
-          width={180}
-          height={37}
-          priority
-        />
-      </div>
+	const handleMouseMove = (event: React.MouseEvent<HTMLCanvasElement>) => {
+		if (!isEditMode) return
 
-      <div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left">
-        <a
-          href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Docs{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Find in-depth information about Next.js features and API.
-          </p>
-        </a>
+		const canvas = canvasRef.current
+		if (canvas) {
+			const rect = canvas.getBoundingClientRect()
+			const mouseX = event.clientX - rect.left
+			const mouseY = event.clientY - rect.top
 
-        <a
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Learn{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Learn about Next.js in an interactive course with&nbsp;quizzes!
-          </p>
-        </a>
+			const gridSnappedX = getGridSnapped(
+				mouseX - rectSize.width / 2,
+				CELL_SPACING
+			)
+			const gridSnappedY = getGridSnapped(
+				mouseY - rectSize.width / 2,
+				CELL_SPACING
+			)
 
-        <a
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Templates{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50`}>
-            Explore starter templates for Next.js.
-          </p>
-        </a>
+			setRectangleX(gridSnappedX)
+			setRectangleY(gridSnappedY)
+		}
+	}
 
-        <a
-          href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          className="group rounded-lg border border-transparent px-5 py-4 transition-colors hover:border-gray-300 hover:bg-gray-100 hover:dark:border-neutral-700 hover:dark:bg-neutral-800/30"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <h2 className={`mb-3 text-2xl font-semibold`}>
-            Deploy{" "}
-            <span className="inline-block transition-transform group-hover:translate-x-1 motion-reduce:transform-none">
-              -&gt;
-            </span>
-          </h2>
-          <p className={`m-0 max-w-[30ch] text-sm opacity-50 text-balance`}>
-            Instantly deploy your Next.js site to a shareable URL with Vercel.
-          </p>
-        </a>
-      </div>
-    </main>
-  );
+	const onMouseDownHandler = () => {
+		console.log('onMouseDownHandler')
+		/**
+		 * 편집모드라면
+		 * - 현재 포지션을 저장, 편집모드 해제
+		 */
+		setRects((rects) => [
+			...rects,
+			new Rectangle({
+				positionX: rectangleX,
+				positionY: rectangleY,
+				width: rectSize.width,
+				height: rectSize.height,
+				imagePath: imagePath,
+			}),
+		])
+
+		setRectangleX(0)
+		setRectangleY(0)
+		setRectSize({
+			width: 0,
+			height: 0,
+		})
+		setIsEditMode(false)
+	}
+
+	const drawImage = (ctx: CanvasRenderingContext2D) => {
+		const img = new Image()
+		img.onload = function () {
+			ctx.drawImage(
+				img,
+				rectangleX,
+				rectangleY,
+				rectSize.width,
+				rectSize.height
+			) // 이미지 좌표 (0, 0)에 그리기
+		}
+		img.src = imagePath // 이미지 URL 설정
+	}
+
+	useEffect(() => {
+		const canvas = canvasRef.current
+		if (!canvas) return
+		const ctx = canvas.getContext('2d')
+		if (!ctx) return
+
+		if (isEditMode) return
+		drawImage(ctx)
+	}, [isEditMode])
+
+	useEffect(() => {
+		const canvas = canvasRef.current
+		if (!canvas) return
+		const ctx = canvas.getContext('2d')
+		if (!ctx) return
+		// 캔버스 크기 설정
+		canvas.width = CANVAS_WIDTH
+		canvas.height = CANVAS_HEIGHT
+
+		const drawGrid = () => {
+			// 격자 무늬 그리기 함수 호출
+			const gridSize = CELL_SPACING
+			const gridColor = GRID_COLOR
+
+			ctx.beginPath()
+			ctx.strokeStyle = gridColor
+
+			// 수직선 그리기
+			for (let x = 0; x <= canvas.width; x += gridSize) {
+				ctx.moveTo(x, 0)
+				ctx.lineTo(x, canvas.height)
+			}
+
+			// 수평선 그리기
+			for (let y = 0; y <= canvas.height; y += gridSize) {
+				ctx.moveTo(0, y)
+				ctx.lineTo(canvas.width, y)
+			}
+
+			ctx.stroke()
+		}
+		// 새로운 사각형 그리기 함수
+		const drawRectangle = () => {
+			// ctx.clearRect(0, 0, canvas.width, canvas.height) // 이전 프레임 지우기
+			ctx.fillStyle = BOUNDARY_BACKGROUND // 사각형 색상
+			ctx.fillRect(
+				rectangleX,
+				rectangleY,
+				rectSize.width,
+				rectSize.height
+			) // 사각형 그리기
+		}
+
+		drawGrid()
+		drawRectangle()
+		rects.map((r) => r.drawImage(ctx))
+	}, [canvasRef, rectangleX, rectangleY]) // 이펙트는 한 번만 실행되어야 함
+
+	return (
+		<main className='flex min-h-screen flex-col items-center justify-between p-24'>
+			<RectSizeInput
+				updateRectSize={setRectSize}
+				updateIsEditMode={setIsEditMode}
+			/>
+			<canvas
+				ref={canvasRef}
+				onMouseMove={handleMouseMove}
+				onMouseDown={onMouseDownHandler}
+			/>
+		</main>
+	)
 }
+
+const getGridSnapped = (position: number, spacing: number) =>
+	Math.round(position / spacing) * spacing

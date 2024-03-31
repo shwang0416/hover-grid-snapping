@@ -1,4 +1,4 @@
-@tailwind base;
+/* @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -30,4 +30,55 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+} */
+
+#mainContainer {
+	background-color: white;
+	width: 500px;
+	height: 500px;
+	cursor: default;
+}
+
+* {
+	cursor: default !important;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+}
+
+#myBox {
+	width: 80px;
+	height: 80px;
+	background-color: rgba(256, 0, 0, 0.5);
+	position: absolute;
+}
+
+#width {
+}
+
+.hline {
+	height: 1px;
+	width: 500px;
+	float: left;
+	position: absolute;
+	background-color: gray;
+}
+
+.vline {
+	width: 1px;
+	height: 500px;
+	float: left;
+	position: absolute;
+	background-color: gray;
+}
+
+.boundary {
+	background-color: #ff0000;
+}
+
+.root {
+	display: flex;
 }
